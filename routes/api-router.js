@@ -17,6 +17,18 @@ apiRouter.get("/not-a-path", (req, res, next) => {
   res.status(404).json({ msg: "ERROR: 404 - path not found" });
 });
 
+apiRouter.patch("/not-a-path", (req, res, next) => {
+  res.status(404).json({ msg: "ERROR: 404 - path not found" });
+});
+
+apiRouter.post("/not-a-path", (req, res, next) => {
+  res.status(404).json({ msg: "ERROR: 404 - path not found" });
+});
+
+apiRouter.delete("/not-a-path", (req, res, next) => {
+  res.status(404).json({ msg: "ERROR: 404 - path not found" });
+});
+
 apiRouter.get("/:article_id/not-an-endpoint", (err, req, res, next) => {
   res.status(404).json({ msg: "invalid path" });
 });

@@ -23,6 +23,11 @@ exports.updateArticleById = (id, incrementation) => {
     .returning("*")
     .then(article => {
       // console.log(article);
+      if (article.length === 0)
+        return Promise.reject({
+          status: 404,
+          msg: `article "${id}" not found`
+        });
       return article[0];
     });
 };
@@ -37,6 +42,7 @@ exports.createComment = (id, user, comment) => {
     .returning("*")
     .then(res => {
       // console.log(res[0]);
+      if (!res) console.log("NAH");
       return res[0];
     });
 };

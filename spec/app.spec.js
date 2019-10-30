@@ -158,6 +158,42 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(`article "${id}" not found`);
         });
     });
+    it("ERROR:404 - invalid path", () => {
+      return request(app)
+        .patch(`/api/not-a-path`)
+        .send({
+          inc_votes: 2
+        })
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal("ERROR: 404 - path not found");
+        });
+    });
+    it("ERROR:400 - when given a id of incorrect data type for patch", () => {
+      return request(app)
+        .patch(`/api/articles/not-a-num`)
+        .send({
+          inc_votes: 2
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            'invalid input syntax for integer: "not-a-num"'
+          );
+        });
+    });
+    it("ERROR:404 - when given a id that does not exist for patch", () => {
+      const id = -10;
+      return request(app)
+        .patch(`/api/articles/${id}`)
+        .send({
+          inc_votes: 2
+        })
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal(`article "${id}" not found`);
+        });
+    });
     it("ERROR:400 - Returns psql error with status 400 and a msg 'bad request' when given a patch request in the incorrect format", () => {
       return request(app)
         .patch(`/api/articles/1`)
@@ -293,6 +329,32 @@ describe("/api", () => {
       //   console.log(res);
       //   // expect(res.body.msg).to.equal(`invalid path`);
       // });
+    });
+    it("ERROR:404 - invalid path on post", () => {
+      return request(app)
+        .post(`/api/not-a-path`)
+        .send({
+          username: "butter_bridge",
+          body: "hi"
+        })
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal(`ERROR: 404 - path not found`);
+        });
+    });
+    it("ERROR:400 - when an id of incorrect data type is past on the post", () => {
+      return request(app)
+        .post(`/api/articles/not-a-num/comments`)
+        .send({
+          username: "butter_bridge",
+          body: "S'alright"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            `invalid input syntax for integer: "not-a-num"`
+          );
+        });
     });
     it("ERROR:400 - when given an invalid request for post that violates non-null contraint", () => {
       return request(app)
@@ -509,11 +571,104 @@ describe("/api", () => {
       return Promise.all(methodPromises);
     });
   });
-  describe.only("/comments/:comment-id", () => {
-    it("PATCH:202 - successfully updates the votes by a given amount (increment/decrement", () => {
+  describe("/comments/:comment-id", () => {
+    it("PATCH:202 - successfully updates the votes by a given amount (increment)", () => {
       return request(app)
         .patch("/api/comments/1")
-        .expect(202);
+        .send({ inc_votes: 2 })
+        .expect(202)
+        .then(({ body: { comment } }) => {
+          expect(comment).to.be.an("object");
+          expect(comment.votes).to.equal(18);
+        });
+    });
+    it("STATUS:202 - successfully updates the votes by a given amount (decrement)", () => {
+      return request(app)
+        .patch("/api/comments/1")
+        .send({ inc_votes: -2 })
+        .expect(202)
+        .then(({ body: { comment } }) => {
+          expect(comment).to.be.an("object");
+          expect(comment.votes).to.equal(14);
+        });
+    });
+    it("STATUS:204 - successfully deletes a comment and all its information by its given id, doesn't return any content", () => {
+      return request(app)
+        .delete("/api/comments/2")
+        .expect(204);
+    });
+  });
+  describe("/comments/:comments_id-errors", () => {
+    it("ERROR:404 - invalid path on patch", () => {
+      return request(app)
+        .patch("/api/not-a-path")
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal("ERROR: 404 - path not found");
+        });
+    });
+    it("ERROR:400 - when given an id of incorrect data type", () => {
+      return request(app)
+        .patch("/api/comments/not-a-number")
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            'invalid input syntax for integer: "not-a-number"'
+          );
+        });
+    });
+    it("ERROR:404 - when given an id that doesn't exist", () => {
+      const id = -10;
+      return request(app)
+        .patch(`/api/comments/${id}`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal(`comment ${id} does not exist`);
+        });
+    });
+    it("ERROR:400 - when given an invalid patch request body data type", () => {
+      return request(app)
+        .patch(`/api/comments/1`)
+        .send({
+          inc_votes: "two"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            'invalid input syntax for integer: "NaN"'
+          );
+        });
+    });
+    it("ERROR:404 - invalid path on delete", () => {
+      return request(app)
+        .delete(`/api/not-a-path`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal("ERROR: 404 - path not found");
+        });
+    });
+    it("ERROR:400 - when given an invalid id on delete", () => {
+      return request(app)
+        .delete(`/api/comments/not-a-num`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            'invalid input syntax for integer: "not-a-num"'
+          );
+        });
+    });
+    it("ERROR:405 - invalid methods", () => {
+      const methods = ["post", "put"];
+      const methodPromises = methods.map(method => {
+        return request(app)
+          [method]("/api/topics")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("method not allowed");
+          });
+      });
+      // methodPromises -> [ Promise { <pending> }, Promise { <pending> }, Promise { <pending> } ]
+      return Promise.all(methodPromises);
     });
   });
 });
