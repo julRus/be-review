@@ -36,12 +36,12 @@ exports.createComment = (id, user, comment) => {
     })
     .returning("*")
     .then(res => {
+      // console.log(res[0]);
       return res[0];
     });
 };
 
 exports.fetchComments = (id, sort_by = "created_at", order = "desc") => {
-  console.log(sort_by, order);
   return connection("comments")
     .select("author", "body", "comment_id", "votes", "created_at")
     .where("article_id", id)
@@ -49,7 +49,44 @@ exports.fetchComments = (id, sort_by = "created_at", order = "desc") => {
     .orderBy(sort_by, order)
     .then(comments => {
       // console.log(comments);
+      if (comments.length === 0)
+        return Promise.reject({
+          status: 404,
+          msg: `article_id ${id} not found`
+        });
       return comments;
+    });
+};
+
+exports.fetchArticles = (
+  sort_by = "created_at",
+  order = "desc",
+  { author, topic }
+) => {
+  return connection("articles")
+    .leftJoin("comments", "comments.article_id", "articles.article_id")
+    .count({ comment_count: "comments.comment_id" })
+    .groupBy("articles.article_id")
+    .select(
+      "articles.article_id",
+      "articles.author",
+      "articles.created_at",
+      "articles.title",
+      "articles.topic",
+      "articles.votes"
+    )
+    .orderBy(sort_by, order)
+    .modify(query => {
+      if (author) query.where("articles.author", author);
+      if (topic) query.where("articles.topic", topic);
+    })
+    .then(res => {
+      if (res.length === 0)
+        return Promise.reject({
+          status: 404,
+          msg: "query search term does not exist in data"
+        });
+      return res;
     });
 };
 

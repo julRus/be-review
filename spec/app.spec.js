@@ -39,6 +39,19 @@ describe("/api", () => {
           expect(res.body.msg).to.equal("ERROR: 404 - path not found");
         });
     });
+    it("ERROR:405 - invalid methods", () => {
+      const methods = ["post", "put", "patch", "delete"];
+      const methodPromises = methods.map(method => {
+        return request(app)
+          [method]("/api/topics")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("method not allowed");
+          });
+      });
+      // methodPromises -> [ Promise { <pending> }, Promise { <pending> }, Promise { <pending> } ]
+      return Promise.all(methodPromises);
+    });
   });
   describe("/users/:username", () => {
     it("GET:200 - Returns a single user object by given username", () => {
@@ -62,6 +75,19 @@ describe("/api", () => {
           // console.log(user);
           expect(res.body.msg).to.be.equal(`"user "${username}" not found"`);
         });
+    });
+    it("ERROR:405 - invalid methods", () => {
+      const methods = ["post", "put", "patch", "delete"];
+      const methodPromises = methods.map(method => {
+        return request(app)
+          [method]("/api/users/butter_bridge")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("method not allowed");
+          });
+      });
+      // methodPromises -> [ Promise { <pending> }, Promise { <pending> }, Promise { <pending> } ]
+      return Promise.all(methodPromises);
     });
   });
   describe("/articles/:article_id", () => {
@@ -145,8 +171,20 @@ describe("/api", () => {
           );
         });
     });
-    it("ERROR:500 - Returns an interanl server error with status 500", () => {});
-    it("ERROR:405 - Returns an error", () => {});
+    // it("ERROR:500 - Returns an interanl server error with status 500", () => {});
+    it("ERROR:405 - invalid methods", () => {
+      const methods = ["post", "put", "delete"];
+      const methodPromises = methods.map(method => {
+        return request(app)
+          [method]("/api/articles/1")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("method not allowed");
+          });
+      });
+      // methodPromises -> [ Promise { <pending> }, Promise { <pending> }, Promise { <pending> } ]
+      return Promise.all(methodPromises);
+    });
   });
   describe("/articles/:article_id/comments", () => {
     it("POST:201 - Returns status code 201 along with a newlwy created comment", () => {
@@ -225,6 +263,257 @@ describe("/api", () => {
           expect(comments).to.be.ascendingBy("votes");
           // Why can't i sort by text body????
         });
+    });
+  });
+  describe("/articles/:article_id/comments-errors", () => {
+    it("ERROR:400 - when given an invalid data type for the article id", () => {
+      return request(app)
+        .get("/api/articles/not-a-number/comments")
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            'invalid input syntax for integer: "not-a-number"'
+          );
+        });
+    });
+    it("ERROR:404 - when given an article id that doesn't exist", () => {
+      const id = -10;
+      return request(app)
+        .get(`/api/articles/${id}/comments`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal(`article_id ${id} not found`);
+        });
+    });
+    it("ERROR:404 - when given an invalid path/ endpoint", () => {
+      return request(app)
+        .get(`/api/articles/1/not-an-endpoint`)
+        .expect(404);
+      // .then(res => {
+      //   console.log(res);
+      //   // expect(res.body.msg).to.equal(`invalid path`);
+      // });
+    });
+    it("ERROR:400 - when given an invalid request for post that violates non-null contraint", () => {
+      return request(app)
+        .post(`/api/articles/1/comments`)
+        .send({
+          username: undefined,
+          body: undefined,
+          age: 10
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            `null value in column "body" violates not-null constraint`
+          );
+        });
+    });
+    it("ERROR:400 - when given an invalid request for post that violates key contraint (must be an existing user", () => {
+      return request(app)
+        .post(`/api/articles/1/comments`)
+        .send({
+          username: "someone",
+          body: "not true"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            `insert or update on table "comments" violates foreign key constraint "comments_author_foreign"`
+          );
+        });
+    });
+    // it("ERROR:400 - when given an invalid request type", () => {
+    //   const req = {
+    //     username: "butter_bridge",
+    //     body: [{ 1: { 2: [8, 9] } }, 2, 3]
+    //   };
+    //   return request(app)
+    //     .post(`/api/articles/1/comments`)
+    //     .send(req)
+    //     .expect(400)
+    //     .then(res => {
+    //       expect(res.body.msg).to.equal(`invalid request`);
+    //     });
+    // });
+    it("ERROR:405 - invalid methods", () => {
+      const methods = ["put", "patch", "delete"];
+      const methodPromises = methods.map(method => {
+        return request(app)
+          [method]("/api/articles/1/comments")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("method not allowed");
+          });
+      });
+      // methodPromises -> [ Promise { <pending> }, Promise { <pending> }, Promise { <pending> } ]
+      return Promise.all(methodPromises);
+    });
+    it("ERROR:500 - internal server error", () => {});
+  });
+  describe("/articles/:article_id/comments?query-errors", () => {
+    it("ERROR:400 - when given an invalid data type for the sort_by query", () => {
+      return request(app)
+        .get("/api/articles/2/comments?sort_by=1")
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal('column "1" does not exist');
+        });
+    });
+    // it("ERROR:404 - when given an data type for the sort_by query", () => {
+    //   return request(app)
+    //     .get("/api/articles/2/comments?sort_by=1")
+    //     .expect(400)
+    //     .then(res => {
+    //       expect(res.body.msg).to.equal('column "1" does not exist');
+    //     });
+    // });
+  });
+  describe("/articles", () => {
+    it("GET:200 - returns an array of articles each with added comments_count property", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.be.an("array");
+          articles.forEach(article => {
+            expect(article).to.have.keys(
+              "article_id",
+              "title",
+              "votes",
+              "topic",
+              "author",
+              "created_at",
+              "comment_count"
+            );
+          });
+        });
+    });
+    it("GET:200 - returns an array of articles sorted by created_at", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.be.descendingBy("created_at");
+        });
+    });
+    it("GET:200 - returns an array of articles sorted by a given existing property", () => {
+      return request(app)
+        .get("/api/articles?sort_by=votes")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.be.descendingBy("votes");
+        });
+    });
+    it("GET:200 - returns an array of articles sorted by a given existing property and by a given order defaulting to descending", () => {
+      return request(app)
+        .get("/api/articles?sort_by=author&order=asc")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).to.be.ascendingBy("author");
+        });
+    });
+    it("GET:200 - returns an array of articles filtered by a given username(author) query", () => {
+      return request(app)
+        .get("/api/articles?author=icellusedkars")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(6);
+          articles.forEach(article => {
+            expect(article.author).to.equal("icellusedkars");
+          });
+        });
+    });
+    it("GET:200 - returns an array of articles filtered by a given topic query", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(11);
+          articles.forEach(article => {
+            expect(article.topic).to.equal("mitch");
+          });
+        });
+    });
+    it("GET:200 - returns an array of articles filtered by a given author and topic query", () => {
+      return request(app)
+        .get("/api/articles?author=rogersop&topic=mitch")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(2);
+          articles.forEach(article => {
+            expect(article.topic).to.equal("mitch");
+            expect(article.author).to.equal("rogersop");
+          });
+        });
+    });
+  });
+  describe("/articles?query-errors", () => {
+    it("ERROR:404, when given an invalid path", () => {
+      return request(app)
+        .get("/api/not-a-path")
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal("ERROR: 404 - path not found");
+        });
+    });
+    it("ERROR:400, when given a collumn that does not exist for sort_by query", () => {
+      return request(app)
+        .get("/api/articles?sort_by=1")
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal('column "1" does not exist');
+        });
+    });
+    it("ERROR:404, when given a author that does not exist", () => {
+      return request(app)
+        .get("/api/articles?author=1")
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            "query search term does not exist in data"
+          );
+        });
+    });
+    it("ERROR:404, when given a author or topic that does not exist", () => {
+      return request(app)
+        .get("/api/articles?topic=1")
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            "query search term does not exist in data"
+          );
+        });
+    });
+    // it("ERROR:404, when given a author or topic that does not exist", () => {
+    //   return request(app)
+    //     .get("/api/articles?people=1")
+    //     .expect(404)
+    //     .then(res => {
+    //       expect(res.body.msg).to.equal(
+    //         "query search term does not exist in data"
+    //       );
+    //     });
+    // });
+    it("ERROR:405 - invalid methods", () => {
+      const methods = ["post", "put", "patch", "delete"];
+      const methodPromises = methods.map(method => {
+        return request(app)
+          [method]("/api/topics")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("method not allowed");
+          });
+      });
+      // methodPromises -> [ Promise { <pending> }, Promise { <pending> }, Promise { <pending> } ]
+      return Promise.all(methodPromises);
+    });
+  });
+  describe.only("/comments/:comment-id", () => {
+    it("PATCH:202 - successfully updates the votes by a given amount (increment/decrement", () => {
+      return request(app)
+        .patch("/api/comments/1")
+        .expect(202);
     });
   });
 });
