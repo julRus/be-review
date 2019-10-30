@@ -29,16 +29,19 @@ exports.seed = function(knex) {
             .insert(articleRows)
             .returning("*")
             .then(articlesTable => {
+              // console.log(articlesTable);
               const ref = makeRefObj(articlesTable);
               const formattedComments = formatComments(ref, commentData);
-              console.log(typeof formattedComments[0].article_id);
+              // console.log(typeof formattedComments[0].article_id);
               return formattedComments;
             })
             .then(formattedComments => {
               return knex("comments")
                 .insert(formattedComments)
                 .returning("*")
-                .then(commentTable => {});
+                .then(commentTable => {
+                  //console.log(commentTable);
+                });
             });
         });
     });
