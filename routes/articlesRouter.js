@@ -30,8 +30,8 @@ articlesRouter
   .get(getArticles)
   .all(error405);
 
-articlesRouter.get("/not-an-endpoint", (err, req, res, next) => {
-  res.status(404).json({ msg: "invalid path" });
-});
+// articlesRouter.get("/:articles_id/not", (err, req, res, next) => {
+//   res.status(404).json({ msg: "invalid path" });
+// });
 
 module.exports = { articlesRouter };

@@ -8,4 +8,6 @@ commentsRouter
   .delete(deleteComment)
   .all(error405);
 
+commentsRouter.route("/").all(error405);
+
 module.exports = { commentsRouter };

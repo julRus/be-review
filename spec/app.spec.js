@@ -118,11 +118,11 @@ describe("/api", () => {
           expect(article.comment_count).to.equal("13");
         });
     });
-    it("PATCH:202 - Returns status code 202 and an article whose votes have been updated to match the origional votes plus the given votes (incremented)", () => {
+    it("PATCH:200 - Returns status code 200 and an article whose votes have been updated to match the origional votes plus the given votes (incremented)", () => {
       return request(app)
         .patch(`/api/articles/1`)
         .send({ inc_votes: -1 })
-        .expect(202)
+        .expect(200)
         .then(({ body: { article } }) => {
           expect(article).to.have.keys([
             "article_id",
@@ -134,6 +134,24 @@ describe("/api", () => {
             "created_at"
           ]);
           expect(article.votes).to.equal(99);
+          // console.log(article.votes);
+        });
+    });
+    it("PATCH:200 - Returns status code 200 and an article whose votes have been updated to match the origional votes plus the given votes (incremented) defaulting to 0 if no req or invalid req given", () => {
+      return request(app)
+        .patch(`/api/articles/1`)
+        .expect(200)
+        .then(({ body: { article } }) => {
+          expect(article).to.have.keys([
+            "article_id",
+            "title",
+            "body",
+            "votes",
+            "topic",
+            "author",
+            "created_at"
+          ]);
+          expect(article.votes).to.equal(100);
           // console.log(article.votes);
         });
     });
@@ -194,19 +212,19 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(`article "${id}" not found`);
         });
     });
-    it("ERROR:400 - Returns psql error with status 400 and a msg 'bad request' when given a patch request in the incorrect format", () => {
-      return request(app)
-        .patch(`/api/articles/1`)
-        .send({
-          inc_votes: "not-a-number!!!!!!"
-        })
-        .expect(400)
-        .then(res => {
-          expect(res.body.msg).to.equal(
-            'invalid input syntax for integer: "NaN"'
-          );
-        });
-    });
+    // it("ERROR:400 - Returns psql error with status 400 and a msg 'bad request' when given a patch request in the incorrect format", () => {
+    //   return request(app)
+    //     .patch(`/api/articles/1`)
+    //     .send({
+    //       inc_votes: "not-a-number!!!!!!"
+    //     })
+    //     .expect(400)
+    //     .then(res => {
+    //       expect(res.body.msg).to.equal(
+    //         'invalid input syntax for integer: "NaN"'
+    //       );
+    //     });
+    // });
     // it("ERROR:500 - Returns an interanl server error with status 500", () => {});
     it("ERROR:405 - invalid methods", () => {
       const methods = ["post", "put", "delete"];
@@ -267,6 +285,21 @@ describe("/api", () => {
           // Why is my new comment not added?
         });
     });
+
+    it("GET:200 - Returns an empty array if given article by article id has no comments", () => {
+      return request(app)
+        .get(`/api/articles/2/comments`)
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          // console.log(comment, "<<<<<<<<<<<<<<<<,TEST TEST TEST!");
+          // console.log(comments);
+          console.log(comments);
+          expect(comments).to.be.an("array");
+          expect(comments.length).to.equal(0);
+          // Why is my new comment not added?
+        });
+    });
+
     it("GET:200 - Returns status code 200 along with an array of comments sorted by a defeault of created_at", () => {
       return request(app)
         .get(`/api/articles/1/comments`)
@@ -313,7 +346,7 @@ describe("/api", () => {
         });
     });
     it("ERROR:404 - when given an article id that doesn't exist", () => {
-      const id = -10;
+      const id = -1;
       return request(app)
         .get(`/api/articles/${id}/comments`)
         .expect(404)
@@ -321,15 +354,15 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(`article_id ${id} not found`);
         });
     });
-    it("ERROR:404 - when given an invalid path/ endpoint", () => {
-      return request(app)
-        .get(`/api/articles/1/not-an-endpoint`)
-        .expect(404);
-      // .then(res => {
-      //   console.log(res);
-      //   // expect(res.body.msg).to.equal(`invalid path`);
-      // });
-    });
+    // it("ERROR:404 - when given an invalid path/ endpoint", () => {
+    //   return request(app)
+    //     .get(`/api/articles/1/not-an-endpoint`)
+    //     .expect(404)
+    //     .then(res => {
+    //       console.log(res);
+    //       expect(res.body.msg).to.equal(`invalid path`);
+    //     });
+    // });
     it("ERROR:404 - invalid path on post", () => {
       return request(app)
         .post(`/api/not-a-path`)
@@ -382,6 +415,32 @@ describe("/api", () => {
         .then(res => {
           expect(res.body.msg).to.equal(
             `insert or update on table "comments" violates foreign key constraint "comments_author_foreign"`
+          );
+        });
+    });
+    it("ERROR:400 - when given an incomplete request body", () => {
+      return request(app)
+        .post(`/api/articles/1/comments`)
+        .send({
+          username: "someone"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            `null value in column "body" violates not-null constraint`
+          );
+        });
+    });
+    it("ERROR:400 - when given an incomplete request body", () => {
+      return request(app)
+        .post(`/api/articles/1/comments`)
+        .send({
+          body: "bib"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            `null value in column "author" violates not-null constraint`
           );
         });
     });
@@ -572,24 +631,33 @@ describe("/api", () => {
     });
   });
   describe("/comments/:comment-id", () => {
-    it("PATCH:202 - successfully updates the votes by a given amount (increment)", () => {
+    it("PATCH:200 - successfully updates the votes by a given amount (increment)", () => {
       return request(app)
         .patch("/api/comments/1")
         .send({ inc_votes: 2 })
-        .expect(202)
+        .expect(200)
         .then(({ body: { comment } }) => {
           expect(comment).to.be.an("object");
           expect(comment.votes).to.equal(18);
         });
     });
-    it("STATUS:202 - successfully updates the votes by a given amount (decrement)", () => {
+    it("PATCH:200 - successfully updates the votes by a given amount (decrement)", () => {
       return request(app)
         .patch("/api/comments/1")
         .send({ inc_votes: -2 })
-        .expect(202)
+        .expect(200)
         .then(({ body: { comment } }) => {
           expect(comment).to.be.an("object");
           expect(comment.votes).to.equal(14);
+        });
+    });
+    it("PATCH:200 - returns unchanged comment when inc_votes is not specified", () => {
+      return request(app)
+        .patch("/api/comments/1")
+        .expect(200)
+        .then(({ body: { comment } }) => {
+          expect(comment).to.be.an("object");
+          expect(comment.votes).to.equal(16);
         });
     });
     it("STATUS:204 - successfully deletes a comment and all its information by its given id, doesn't return any content", () => {
@@ -657,11 +725,44 @@ describe("/api", () => {
           );
         });
     });
+    it("ERROR:404 - when given an id that doesn't exist on delete", () => {
+      const id = -10;
+      return request(app)
+        .delete(`/api/comments/${id}`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal(
+            `comments with id "${id}" does not exist`
+          );
+        });
+    });
     it("ERROR:405 - invalid methods", () => {
       const methods = ["post", "put"];
       const methodPromises = methods.map(method => {
         return request(app)
           [method]("/api/topics")
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).to.equal("method not allowed");
+          });
+      });
+      // methodPromises -> [ Promise { <pending> }, Promise { <pending> }, Promise { <pending> } ]
+      return Promise.all(methodPromises);
+    });
+  });
+  describe("/api - get/api", () => {
+    it("GET:200 - Returns a json describing all the available endpoints of my api", () => {
+      return request(app)
+        .get("/api")
+        .expect(200);
+    });
+  });
+  describe("ERROR405", () => {
+    it("Ensures no methods other than get are allowed on the api path!", () => {
+      const methods = ["post", "put", "patch", "delete"];
+      const methodPromises = methods.map(method => {
+        return request(app)
+          [method]("/api")
           .expect(405)
           .then(({ body: { msg } }) => {
             expect(msg).to.equal("method not allowed");

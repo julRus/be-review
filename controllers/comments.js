@@ -5,7 +5,7 @@ exports.patchComment = (req, res, next) => {
   const { inc_votes } = req.body;
   updateComment(comments_id, inc_votes)
     .then(comment => {
-      res.status(202).send({ comment });
+      res.status(200).send({ comment });
     })
     .catch(next);
 };
@@ -14,7 +14,7 @@ exports.deleteComment = (req, res, next) => {
   const { comments_id } = req.params;
   removeComment(comments_id)
     .then(comment => {
-      res.status(204).send({ comment });
+      res.status(204).send({});
     })
     .catch(next);
 };

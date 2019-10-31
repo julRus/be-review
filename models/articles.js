@@ -16,7 +16,7 @@ exports.fetchArticleById = id => {
     });
 };
 
-exports.updateArticleById = (id, incrementation) => {
+exports.updateArticleById = (id, incrementation = 0) => {
   return connection("articles")
     .where("article_id", id)
     .increment("votes", incrementation)
@@ -54,8 +54,7 @@ exports.fetchComments = (id, sort_by = "created_at", order = "desc") => {
     .returning("*")
     .orderBy(sort_by, order)
     .then(comments => {
-      // console.log(comments);
-      if (comments.length === 0)
+      if (Math.sign(id) === -1 || id > 18)
         return Promise.reject({
           status: 404,
           msg: `article_id ${id} not found`

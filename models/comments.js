@@ -1,6 +1,6 @@
 const connection = require("../db/connection");
 
-exports.updateComment = (id, votes) => {
+exports.updateComment = (id, votes = 0) => {
   return connection("comments")
     .where("comment_id", id)
     .first()
@@ -19,5 +19,14 @@ exports.updateComment = (id, votes) => {
 exports.removeComment = id => {
   return connection("comments")
     .where("comment_id", id)
-    .delete();
+    .delete()
+    .then(comments => {
+      if (comments === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: `comments with id "${id}" does not exist`
+        });
+      }
+      return comments;
+    });
 };
