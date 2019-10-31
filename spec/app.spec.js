@@ -660,10 +660,15 @@ describe("/api", () => {
           expect(comment.votes).to.equal(16);
         });
     });
-    it("STATUS:204 - successfully deletes a comment and all its information by its given id, doesn't return any content", () => {
+    it("DELETE:204 - successfully deletes a comment and all its information by its given id, doesn't return any content", () => {
       return request(app)
         .delete("/api/comments/2")
-        .expect(204);
+        .expect(204)
+        .then(res => {
+          return request(app)
+            .delete("/api/comments/2")
+            .expect(404);
+        });
     });
   });
   describe("/comments/:comments_id-errors", () => {
