@@ -1,4 +1,4 @@
-const { app } = require("../be-nc-news/app");
+const app = require("./app");
 
 const { PORT = 9090 } = process.env;
 
