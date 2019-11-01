@@ -48,8 +48,8 @@ exports.getComments = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  const { sort_by, order, ...query } = req.query;
-  fetchArticles(sort_by, order, query)
+  const { sort_by, order, limit, ...query } = req.query;
+  fetchArticles(sort_by, order, limit, query)
     .then(articles => {
       res.status(200).send({ articles });
     })

@@ -444,6 +444,19 @@ describe("/api", () => {
           );
         });
     });
+    it("ERROR:404 - when given an article id that doesn't exist", () => {
+      const id = -1;
+      return request(app)
+        .post(`/api/articles/${id}/comments`)
+        .send({
+          username: "icellusedkars",
+          body: "Hello my name is brian"
+        })
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal(`article_id ${id} not found`);
+        });
+    });
     // it("ERROR:400 - when given an invalid request type", () => {
     //   const req = {
     //     username: "butter_bridge",
@@ -550,7 +563,7 @@ describe("/api", () => {
         .get("/api/articles?topic=mitch")
         .expect(200)
         .then(({ body: { articles } }) => {
-          expect(articles.length).to.equal(11);
+          expect(articles.length).to.equal(10);
           articles.forEach(article => {
             expect(article.topic).to.equal("mitch");
           });
@@ -759,7 +772,10 @@ describe("/api", () => {
     it("GET:200 - Returns a json describing all the available endpoints of my api", () => {
       return request(app)
         .get("/api")
-        .expect(200);
+        .expect(200)
+        .then(({ body: { endpoints } }) => {
+          expect(endpoints).to.be.an("object");
+        });
     });
   });
   describe("ERROR405", () => {
@@ -777,6 +793,81 @@ describe("/api", () => {
       return Promise.all(methodPromises);
     });
   });
+
+  // describe("/articles - Pagnation", () => {
+  //   it("GET:200 - Limit query default to 10", () => {
+  //     return request(app)
+  //       .get("/api/articles")
+  //       .expect(200)
+  //       .then(({ body: { articles } }) => {
+  //         expect(articles.length).to.equal(10);
+  //       });
+  //   });
+  //   it("GET:200 - Limit query of a given amount", () => {
+  //     return request(app)
+  //       .get("/api/articles?limit=6")
+  //       .expect(200)
+  //       .then(({ body: { articles } }) => {
+  //         expect(articles.length).to.equal(6);
+  //       });
+  //   });
+  //   it("GET:200 - page query default to one", () => {
+  //     return request(app)
+  //       .get("/api/articles")
+  //       .expect(200)
+  //       .then(({ body: { articles } }) => {
+  //         // console.log(articles);
+  //         expect(articles.length).to.equal(10);
+  //         // expect(articles.total_count).to.equal(10);
+  //         // expect(articles[0]).to.eql({
+  //         //   comment_count: "13",
+  //         //   article_id: 1,
+  //         //   author: "butter_bridge",
+  //         //   created_at: "2018-11-15T12:21:54.171Z",
+  //         //   title: "Living in the shadow of a great man",
+  //         //   topic: "mitch",
+  //         //   votes: 100
+  //         // });
+  //         // expect(articles[articles.length - 1]).to.eql({
+  //         //   comment_count: "0",
+  //         //   article_id: 10,
+  //         //   author: "rogersop",
+  //         //   created_at: "1982-11-24T12:21:54.171Z",
+  //         //   title: "Seven inspirational thought leaders from Manchester UK",
+  //         //   topic: "mitch",
+  //         //   votes: 0
+  //         // });
+  //       });
+  //   });
+  //   // it("GET:200 - page query", () => {
+  //   //   return request(app)
+  //   //     .get("/api/articles?page=2")
+  //   //     .expect(200)
+  //   //     .then(({ body: { articles } }) => {
+  //   //       // console.log(articles);
+  //   //       expect(articles.length).to.equal(2);
+  //   //     });
+  //   // });
+  //   it("GET:200 - page query with limit", () => {
+  //     return request(app)
+  //       .get("/api/articles?limit=3&page=2")
+  //       .expect(200)
+  //       .then(({ body: { articles } }) => {
+  //         // console.log(articles);
+  //         expect(articles.length).to.equal(3);
+  //       });
+  //   });
+  // it("GET:200 - has a total_articles property default to 10", () => {
+  //   return request(app)
+  //     .get("/api/articles")
+  //     .expect(200)
+  //     .then(({ body: { articles } }) => {
+  //       // console.log(articles);
+  //       expect(articles.length).to.equal(10);
+  //       expect(articles.total_articles).to.equal(10);
+  //     });
+  // });
+  // });
 });
 
 // {

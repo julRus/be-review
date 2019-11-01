@@ -32,6 +32,7 @@ exports.seed = function(knex) {
               // console.log(articlesTable);
               const ref = makeRefObj(articlesTable);
               const formattedComments = formatComments(ref, commentData);
+              // console.log(articleRows);
               // console.log(typeof formattedComments[0].article_id);
               return formattedComments;
             })
