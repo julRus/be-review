@@ -40,7 +40,7 @@ describe("/api", () => {
         });
     });
     it("ERROR:405 - invalid methods", () => {
-      const methods = ["post", "put", "patch", "delete"];
+      const methods = ["put", "patch", "delete"];
       const methodPromises = methods.map(method => {
         return request(app)
           [method]("/api/topics")
@@ -227,7 +227,7 @@ describe("/api", () => {
     // });
     // it("ERROR:500 - Returns an interanl server error with status 500", () => {});
     it("ERROR:405 - invalid methods", () => {
-      const methods = ["post", "put", "delete"];
+      const methods = ["post", "put"];
       const methodPromises = methods.map(method => {
         return request(app)
           [method]("/api/articles/1")
@@ -272,7 +272,7 @@ describe("/api", () => {
           // console.log(comment, "<<<<<<<<<<<<<<<<,TEST TEST TEST!");
           // console.log(comments);
           expect(comments).to.be.an("array");
-          expect(comments.length).to.equal(13);
+          expect(comments.length).to.equal(10);
           comments.forEach(comment => {
             expect(comment).to.have.keys([
               "comment_id",
@@ -630,7 +630,7 @@ describe("/api", () => {
     //     });
     // });
     it("ERROR:405 - invalid methods", () => {
-      const methods = ["post", "put", "patch", "delete"];
+      const methods = ["put", "patch", "delete"];
       const methodPromises = methods.map(method => {
         return request(app)
           [method]("/api/topics")
@@ -755,7 +755,7 @@ describe("/api", () => {
         });
     });
     it("ERROR:405 - invalid methods", () => {
-      const methods = ["post", "put"];
+      const methods = ["put"];
       const methodPromises = methods.map(method => {
         return request(app)
           [method]("/api/topics")
@@ -794,80 +794,214 @@ describe("/api", () => {
     });
   });
 
-  // describe("/articles - Pagnation", () => {
-  //   it("GET:200 - Limit query default to 10", () => {
-  //     return request(app)
-  //       .get("/api/articles")
-  //       .expect(200)
-  //       .then(({ body: { articles } }) => {
-  //         expect(articles.length).to.equal(10);
-  //       });
-  //   });
-  //   it("GET:200 - Limit query of a given amount", () => {
-  //     return request(app)
-  //       .get("/api/articles?limit=6")
-  //       .expect(200)
-  //       .then(({ body: { articles } }) => {
-  //         expect(articles.length).to.equal(6);
-  //       });
-  //   });
-  //   it("GET:200 - page query default to one", () => {
-  //     return request(app)
-  //       .get("/api/articles")
-  //       .expect(200)
-  //       .then(({ body: { articles } }) => {
-  //         // console.log(articles);
-  //         expect(articles.length).to.equal(10);
-  //         // expect(articles.total_count).to.equal(10);
-  //         // expect(articles[0]).to.eql({
-  //         //   comment_count: "13",
-  //         //   article_id: 1,
-  //         //   author: "butter_bridge",
-  //         //   created_at: "2018-11-15T12:21:54.171Z",
-  //         //   title: "Living in the shadow of a great man",
-  //         //   topic: "mitch",
-  //         //   votes: 100
-  //         // });
-  //         // expect(articles[articles.length - 1]).to.eql({
-  //         //   comment_count: "0",
-  //         //   article_id: 10,
-  //         //   author: "rogersop",
-  //         //   created_at: "1982-11-24T12:21:54.171Z",
-  //         //   title: "Seven inspirational thought leaders from Manchester UK",
-  //         //   topic: "mitch",
-  //         //   votes: 0
-  //         // });
-  //       });
-  //   });
-  //   // it("GET:200 - page query", () => {
-  //   //   return request(app)
-  //   //     .get("/api/articles?page=2")
-  //   //     .expect(200)
-  //   //     .then(({ body: { articles } }) => {
-  //   //       // console.log(articles);
-  //   //       expect(articles.length).to.equal(2);
-  //   //     });
-  //   // });
-  //   it("GET:200 - page query with limit", () => {
-  //     return request(app)
-  //       .get("/api/articles?limit=3&page=2")
-  //       .expect(200)
-  //       .then(({ body: { articles } }) => {
-  //         // console.log(articles);
-  //         expect(articles.length).to.equal(3);
-  //       });
-  //   });
-  // it("GET:200 - has a total_articles property default to 10", () => {
-  //   return request(app)
-  //     .get("/api/articles")
-  //     .expect(200)
-  //     .then(({ body: { articles } }) => {
-  //       // console.log(articles);
-  //       expect(articles.length).to.equal(10);
-  //       expect(articles.total_articles).to.equal(10);
-  //     });
-  // });
-  // });
+  describe("/articles - Pagnation", () => {
+    it("GET:200 - Limit query default to 10", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(10);
+        });
+    });
+    it("GET:200 - Limit query of a given amount", () => {
+      return request(app)
+        .get("/api/articles?limit=6")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).to.equal(6);
+        });
+    });
+    it("GET:200 - page query default to one", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          // console.log(articles);
+          expect(articles.length).to.equal(10);
+          // expect(articles.total_count).to.equal(10);
+          // expect(articles[0]).to.eql({
+          //   comment_count: "13",
+          //   article_id: 1,
+          //   author: "butter_bridge",
+          //   created_at: "2018-11-15T12:21:54.171Z",
+          //   title: "Living in the shadow of a great man",
+          //   topic: "mitch",
+          //   votes: 100
+          // });
+          // expect(articles[articles.length - 1]).to.eql({
+          //   comment_count: "0",
+          //   article_id: 10,
+          //   author: "rogersop",
+          //   created_at: "1982-11-24T12:21:54.171Z",
+          //   title: "Seven inspirational thought leaders from Manchester UK",
+          //   topic: "mitch",
+          //   votes: 0
+          // });
+        });
+    });
+    // it("GET:200 - page query", () => {
+    //   return request(app)
+    //     .get("/api/articles?page=2")
+    //     .expect(200)
+    //     .then(({ body: { articles } }) => {
+    //       // console.log(articles);
+    //       expect(articles.length).to.equal(2);
+    //     });
+    // });
+    it("GET:200 - page query with limit", () => {
+      return request(app)
+        .get("/api/articles?limit=3&page=2")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          // console.log(articles);
+          // console.log(articles);
+          expect(articles.length).to.equal(3);
+          expect(articles[0]).to.eql({
+            comment_count: "0",
+            article_id: 4,
+            author: "rogersop",
+            created_at: "2006-11-18T12:21:54.171Z",
+            title: "Student SUES Mitch!",
+            topic: "mitch",
+            votes: 0
+          });
+        });
+    });
+    //   it("GET:200 - has a total_articles property default to 10", () => {
+    //     return request(app)
+    //       .get("/api/articles")
+    //       .expect(200)
+    //       .then(({ body: { articles } }) => {
+    //         // console.log(articles);
+    //         expect(articles.length).to.equal(10);
+    //         expect(articles.total_articles).to.equal(10);
+    //       });
+    //   });
+  });
+  describe("/articles/:article-id/comments - Pagnation", () => {
+    it("GET:200 - Returns comments limited to 10", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          // console.log(comments);
+          expect(comments.length).to.equal(10);
+        });
+    });
+    it("GET:200 - Returns comments limited to a given limit query", () => {
+      return request(app)
+        .get("/api/articles/1/comments?limit=5")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          // console.log(comments);
+          expect(comments.length).to.equal(5);
+        });
+    });
+    it("GET:200 - Returns comments limited to a given limit query and page", () => {
+      return request(app)
+        .get("/api/articles/1/comments?limit=5&page=2")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          // console.log(comments);
+          expect(comments.length).to.equal(5);
+          expect(comments[0]).to.eql({
+            author: "icellusedkars",
+            body: "Lobster pot",
+            comment_id: 7,
+            votes: 0,
+            created_at: "2011-11-24T12:36:03.389Z"
+          });
+        });
+    });
+  });
+
+  describe("/aticles - POST", () => {
+    it("POST:201 - Returns a nelwy posted comment", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "A test article",
+          body: "This is an article made to test article post method",
+          topic: "cats",
+          author: "rogersop"
+        })
+        .expect(201)
+        .then(({ body: { comment } }) => {
+          expect(comment).to.be.an("object");
+          expect(comment).to.have.keys([
+            "article_id",
+            "title",
+            "body",
+            "votes",
+            "topic",
+            "author",
+            "created_at"
+          ]);
+          // expect(comments.length).to.equal(10);
+        });
+    });
+  });
+
+  describe("/articles/:article-id - DELETE", () => {
+    it("DELETE:204 - Deletes an article", () => {
+      return request(app)
+        .delete("/api/articles/4")
+        .expect(204);
+    });
+  });
+  describe("/topics - POST", () => {
+    it("POST:201 - Posts a new topic", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({
+          slug: "Outer Sapce, Inner Space",
+          description:
+            "The endless void that stretches out far and wide behind our eyes and deep in our conciousness"
+        })
+        .expect(201)
+        .then(({ body: { topic } }) => {
+          expect(topic).to.be.an("object");
+          expect(topic).to.eql({
+            slug: "Outer Sapce, Inner Space",
+            description:
+              "The endless void that stretches out far and wide behind our eyes and deep in our conciousness"
+          });
+        });
+    });
+  });
+  describe("/users - POST", () => {
+    it("POST:201 - Posts a new user", () => {
+      return request(app)
+        .post("/api/users")
+        .send({
+          username: "SpaceChaser",
+          name: "Neil Armstrong",
+          avatar_url: "thisismysuperamazingspacerelatedavatar.com"
+        })
+        .expect(201)
+        .then(({ body: { user } }) => {
+          expect(user).to.be.an("object");
+          expect(user).to.eql({
+            username: "SpaceChaser",
+            name: "Neil Armstrong",
+            avatar_url: "thisismysuperamazingspacerelatedavatar.com"
+          });
+        });
+    });
+  });
+  describe("/users - GET", () => {
+    it("GET:200 - Returns an array of all the users in the database", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(({ body: { users } }) => {
+          expect(users).to.be.an("array");
+          users.forEach(user => {
+            expect(user).to.have.keys(["username", "name", "avatar_url"]);
+          });
+        });
+    });
+  });
 });
 
 // {
@@ -879,3 +1013,5 @@ describe("/api", () => {
 //             author: 'butter_bridge',
 //               created_at: 2018 - 11 - 15T12: 21: 54.171Z
 // }
+
+// ERROR HANDLING FOR ALL EXTRA ENDPOINTS

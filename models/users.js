@@ -15,3 +15,24 @@ exports.fetchUserById = username => {
       } else return user;
     });
 };
+
+exports.createUser = (user, name, avatar) => {
+  return connection("users")
+    .insert({
+      username: user,
+      name: name,
+      avatar_url: avatar
+    })
+    .returning("*")
+    .then(res => {
+      return res[0];
+    });
+};
+
+exports.fetchUsers = () => {
+  return connection("users")
+    .returning("*")
+    .then(res => {
+      return res;
+    });
+};

@@ -5,7 +5,10 @@ exports.up = function(knex) {
     // .onDelete("CASCADE");
     commentsTable.string("body", 10000000).notNullable();
     commentsTable.integer("votes").defaultTo(0);
-    commentsTable.integer("article_id").references("articles.article_id");
+    commentsTable
+      .integer("article_id")
+      .references("articles.article_id")
+      .onDelete("CASCADE");
     commentsTable
       .string("author")
       .references("users.username")

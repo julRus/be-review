@@ -57,26 +57,40 @@ exports.createComment = (id, user, comment) => {
     });
 };
 
-exports.fetchComments = (id, sort_by = "created_at", order = "desc") => {
-  return connection("comments")
-    .select("author", "body", "comment_id", "votes", "created_at")
-    .where("article_id", id)
-    .returning("*")
-    .orderBy(sort_by, order)
-    .then(comments => {
-      if (Math.sign(id) === -1 || id > 18)
-        return Promise.reject({
-          status: 404,
-          msg: `article_id ${id} not found`
-        });
-      return comments;
-    });
+exports.fetchComments = (
+  id,
+  sort_by = "created_at",
+  order = "desc",
+  limit = 10,
+  page = 0
+) => {
+  return (
+    connection("comments")
+      .select("author", "body", "comment_id", "votes", "created_at")
+      .where("article_id", id)
+      .returning("*")
+      .orderBy(sort_by, order)
+      .limit(limit)
+      // .offset((page - 1) * limit)
+      .modify(query => {
+        if (page > 0) query.offset((page - 1) * limit);
+      })
+      .then(comments => {
+        if (Math.sign(id) === -1 || id > 18)
+          return Promise.reject({
+            status: 404,
+            msg: `article_id ${id} not found`
+          });
+        return comments;
+      })
+  );
 };
 
 exports.fetchArticles = (
   sort_by = "created_at",
   order = "desc",
   limit = 10,
+  page = 0,
   { author, topic }
 ) => {
   return (
@@ -99,7 +113,7 @@ exports.fetchArticles = (
         if (author) query.where("articles.author", author);
         if (topic) query.where("articles.topic", topic);
         // if (page === 2) query.limit(10).offset(10);
-        // if (page) query.offset((page - 1) * limit + 1);
+        if (page > 0) query.offset((page - 1) * limit);
       })
       .then(res => {
         if (res.length === 0)
@@ -110,6 +124,22 @@ exports.fetchArticles = (
         return res;
       })
   );
+};
+
+exports.createArticle = (title, body, topic, author) => {
+  // console.log("MEMEMEMEME");
+  return connection("articles")
+    .insert({ title: title, body: body, topic: topic, author: author })
+    .returning("*")
+    .then(comments => {
+      return comments[0];
+    });
+};
+
+exports.removeArticles = id => {
+  return connection("articles")
+    .where("article_id", id)
+    .delete();
 };
 
 // PATCH ARTICLE - 400:BAD REQ

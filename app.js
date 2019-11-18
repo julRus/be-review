@@ -7,6 +7,9 @@ const {
 } = require("./Errors/error-handler");
 const { error405 } = require("./Errors/error-405");
 
+const cors = require("cors");
+
+app.use(cors());
 app.use(express.json());
 
 app.use("/api", apiRouter);
