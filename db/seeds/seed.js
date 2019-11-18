@@ -41,7 +41,7 @@ exports.seed = function(knex) {
                 .insert(formattedComments)
                 .returning("*")
                 .then(commentTable => {
-                  //console.log(commentTable);
+                  // console.log(commentTable);
                 });
             });
         });

@@ -61,7 +61,7 @@ exports.fetchComments = (
   id,
   sort_by = "created_at",
   order = "desc",
-  limit = 10,
+  limit = 100,
   page = 0
 ) => {
   return (

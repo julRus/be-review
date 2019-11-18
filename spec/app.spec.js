@@ -503,7 +503,7 @@ describe("/api", () => {
     //     });
     // });
   });
-  describe("/articles", () => {
+  describe.only("/articles", () => {
     it("GET:200 - returns an array of articles each with added comments_count property", () => {
       return request(app)
         .get("/api/articles")
@@ -536,6 +536,7 @@ describe("/api", () => {
         .get("/api/articles?sort_by=votes")
         .expect(200)
         .then(({ body: { articles } }) => {
+          console.log(articles);
           expect(articles).to.be.descendingBy("votes");
         });
     });
