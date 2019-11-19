@@ -240,7 +240,7 @@ describe("/api", () => {
       return Promise.all(methodPromises);
     });
   });
-  describe("/articles/:article_id/comments", () => {
+  describe.only("/articles/:article_id/comments", () => {
     it("POST:201 - Returns status code 201 along with a newlwy created comment", () => {
       return request(app)
         .post(`/api/articles/1/comments`)
@@ -279,7 +279,8 @@ describe("/api", () => {
               "body",
               "votes",
               "author",
-              "created_at"
+              "created_at",
+              "article_id"
             ]);
           });
           // Why is my new comment not added?
@@ -536,7 +537,6 @@ describe("/api", () => {
         .get("/api/articles?sort_by=votes")
         .expect(200)
         .then(({ body: { articles } }) => {
-          console.log(articles);
           expect(articles).to.be.descendingBy("votes");
         });
     });

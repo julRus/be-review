@@ -61,12 +61,19 @@ exports.fetchComments = (
   id,
   sort_by = "created_at",
   order = "desc",
-  limit = 100,
+  limit = 10,
   page = 0
 ) => {
   return (
     connection("comments")
-      .select("author", "body", "comment_id", "votes", "created_at")
+      .select(
+        "author",
+        "body",
+        "comment_id",
+        "votes",
+        "created_at",
+        "article_id"
+      )
       .where("article_id", id)
       .returning("*")
       .orderBy(sort_by, order)
@@ -76,7 +83,7 @@ exports.fetchComments = (
         if (page > 0) query.offset((page - 1) * limit);
       })
       .then(comments => {
-        if (Math.sign(id) === -1 || id > 18)
+        if (Math.sign(id) === -1 || id > 34)
           return Promise.reject({
             status: 404,
             msg: `article_id ${id} not found`
