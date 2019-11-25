@@ -173,7 +173,7 @@ describe("/api", () => {
         .get(`/api/articles/${id}`)
         .expect(404)
         .then(res => {
-          expect(res.body.msg).to.equal(`article "${id}" not found`);
+          expect(res.body.msg).to.equal(`article ${id} not found`);
         });
     });
     it("ERROR:404 - invalid path", () => {
@@ -209,7 +209,7 @@ describe("/api", () => {
         })
         .expect(404)
         .then(res => {
-          expect(res.body.msg).to.equal(`article "${id}" not found`);
+          expect(res.body.msg).to.equal(`article ${id} not found`);
         });
     });
     // it("ERROR:400 - Returns psql error with status 400 and a msg 'bad request' when given a patch request in the incorrect format", () => {
@@ -240,7 +240,7 @@ describe("/api", () => {
       return Promise.all(methodPromises);
     });
   });
-  describe.only("/articles/:article_id/comments", () => {
+  describe("/articles/:article_id/comments", () => {
     it("POST:201 - Returns status code 201 along with a newlwy created comment", () => {
       return request(app)
         .post(`/api/articles/1/comments`)
@@ -504,7 +504,7 @@ describe("/api", () => {
     //     });
     // });
   });
-  describe.only("/articles", () => {
+  describe("/articles", () => {
     it("GET:200 - returns an array of articles each with added comments_count property", () => {
       return request(app)
         .get("/api/articles")
@@ -906,6 +906,7 @@ describe("/api", () => {
           // console.log(comments);
           expect(comments.length).to.equal(5);
           expect(comments[0]).to.eql({
+            article_id: 1,
             author: "icellusedkars",
             body: "Lobster pot",
             comment_id: 7,

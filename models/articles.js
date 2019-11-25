@@ -11,7 +11,7 @@ exports.fetchArticleById = id => {
     .then(article => {
       // console.table(article);
       if (!article) {
-        return Promise.reject({ status: 404, msg: `article "-10" not found` });
+        return Promise.reject({ status: 404, msg: `article ${id} not found` });
       } else return article;
     });
 };
@@ -26,7 +26,7 @@ exports.updateArticleById = (id, incrementation = 0) => {
       if (article.length === 0)
         return Promise.reject({
           status: 404,
-          msg: `article "${id}" not found`
+          msg: `article ${id} not found`
         });
       return article[0];
     });
@@ -83,7 +83,7 @@ exports.fetchComments = (
         if (page > 0) query.offset((page - 1) * limit);
       })
       .then(comments => {
-        if (Math.sign(id) === -1 || id > 34)
+        if (Math.sign(id) === -1 || id > 36)
           return Promise.reject({
             status: 404,
             msg: `article_id ${id} not found`
